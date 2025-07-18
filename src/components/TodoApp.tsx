@@ -22,13 +22,26 @@ export const TodoApp = () => {
 
   // Load initial todos
   useEffect(() => {
-    // Since your backend doesn't have a GET all todos endpoint,
-    // we'll start with the initial todos from your backend
-    const initialTodos = [
-      { id: 1, message: "Implement new feature", status: "In-progress" },
-      { id: 2, message: "Connect Database", status: "In-progress" }
-    ];
-    setTodos(initialTodos);
+    const fetchTodos = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch todos');
+        }
+        const data = await response.json();
+        setTodos(data);
+      } catch (error) {
+        console.error('Error fetching todos:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load todos",
+          variant: "destructive",
+          duration: 3000,
+        });
+      }
+    };
+
+    fetchTodos();
   }, []);
 
   const addTodo = async (message: string, status: string) => {
