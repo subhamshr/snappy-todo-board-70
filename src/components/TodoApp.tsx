@@ -22,15 +22,13 @@ export const TodoApp = () => {
 
   // Load initial todos
   useEffect(() => {
-    // For demo purposes, we'll use mock data
-    // In a real app, you'd fetch from your backend
-    const mockTodos = [
+    // Since your backend doesn't have a GET all todos endpoint,
+    // we'll start with the initial todos from your backend
+    const initialTodos = [
       { id: 1, message: "Implement new feature", status: "In-progress" },
-      { id: 2, message: "Connect Database", status: "In-progress" },
-      { id: 3, message: "Review pull requests", status: "Pending" },
-      { id: 4, message: "Deploy to production", status: "Completed" }
+      { id: 2, message: "Connect Database", status: "In-progress" }
     ];
-    setTodos(mockTodos);
+    setTodos(initialTodos);
   }, []);
 
   const addTodo = async (message: string, status: string) => {
@@ -40,14 +38,18 @@ export const TodoApp = () => {
       const newId = Math.max(...todos.map(t => t.id), 0) + 1;
       const newTodo = { id: newId, message, status };
       
-      // Mock API call - replace with actual API call
-      // const response = await fetch(`${API_BASE}/`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(newTodo)
-      // });
+      const response = await fetch(`${API_BASE}/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newTodo)
+      });
       
-      setTodos(prev => [...prev, newTodo]);
+      if (!response.ok) {
+        throw new Error('Failed to add todo');
+      }
+      
+      const addedTodo = await response.json();
+      setTodos(prev => [...prev, addedTodo]);
       toast({
         title: "Success!",
         description: "Todo added successfully",
@@ -68,13 +70,17 @@ export const TodoApp = () => {
   const updateTodo = async (id: number, updates: Partial<Todo>) => {
     setLoading(true);
     try {
-      // Mock API call - replace with actual API call
-      // const response = await fetch(`${API_BASE}/todo/${id}`, {
-      //   method: 'PATCH',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(updates)
-      // });
+      const response = await fetch(`${API_BASE}/todo/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+      });
       
+      if (!response.ok) {
+        throw new Error('Failed to update todo');
+      }
+      
+      const updatedTodo = await response.json();
       setTodos(prev =>
         prev.map(todo =>
           todo.id === id ? { ...todo, ...updates } : todo
@@ -100,10 +106,13 @@ export const TodoApp = () => {
   const deleteTodo = async (id: number) => {
     setLoading(true);
     try {
-      // Mock API call - replace with actual API call
-      // const response = await fetch(`${API_BASE}/todo/${id}`, {
-      //   method: 'DELETE'
-      // });
+      const response = await fetch(`${API_BASE}/todo/${id}`, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete todo');
+      }
       
       setTodos(prev => prev.filter(todo => todo.id !== id));
       toast({
